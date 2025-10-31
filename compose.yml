@@ -1,0 +1,48 @@
+networks:
+  internal:
+    driver: bridge
+    internal: true
+  external:
+    driver: bridge
+
+services:
+  vulnerable-app:
+    build: ./vulnerable-app
+    container_name: ssrf_vulnerable_app
+    ports:
+      - "8080:80"
+    networks:
+      - internal
+      - external
+    volumes:
+      - ./vulnerable-app:/var/www/html
+    environment:
+      - INTERNAL_API_URL=http://internal-api
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - internal-api
+      - redis
+    user: 1000:1000
+
+  redis:
+    image: redis:6-alpine
+    container_name: ssrf_redis
+    networks:
+      - internal
+    command:  sh -c "umask 022 && redis-server --protected-mode no  --save 60 1"
+    volumes:
+      - ./vulnerable-app:/var/www/html
+    user: "1000:1000"
+
+  internal-api:
+    build: ./internal-api
+    container_name: ssrf_internal_api
+    networks:
+      - internal
+    volumes:
+      - ./internal-api:/var/www/html
+      - api-data:/var/www/data
+
+volumes:
+  api-data:
