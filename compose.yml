@@ -30,7 +30,8 @@ services:
     container_name: ssrf_redis
     networks:
       - internal
-    command:  sh -c "umask 022 && redis-server --protected-mode no  --save 60 1"
+    #command:  sh -c "umask 022 && redis-server --protected-mode no  --save 60 1"
+    command: sh -c "umask 022 && redis-server --protected-mode no  --save """
     volumes:
       - ./vulnerable-app:/var/www/html
     user: "1000:1000"
